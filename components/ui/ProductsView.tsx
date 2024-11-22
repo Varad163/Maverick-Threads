@@ -55,24 +55,19 @@ export default function CategorySelectorComponent({ categories }: CategorySelect
           <CommandList>
             <CommandEmpty>No category found.</CommandEmpty>
             <CommandGroup>
-              {categories.data.map((category) => (
+              {categories.data?.map((category) => (
                 <CommandItem
-                  key={category.value}
-                  value={category.title}
+                  key={category.value} // Ensure category.value is unique
+                  value={category.value} // Use category.value consistently
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
+                    setValue(currentValue === value ? "" : currentValue); // Toggle selection
                     setOpen(false);
                   }}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === category.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {category.title}
+                  {category.title} {/* Display the title */}
                 </CommandItem>
               ))}
+
             </CommandGroup>
           </CommandList>
         </Command>
