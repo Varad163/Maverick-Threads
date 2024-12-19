@@ -16,23 +16,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { Category } from "@/sanity.types";
+import type { Category, Product } from "@/sanity.types";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface CategorySelectorProps {
   categories: {
     data: Category[];
   };
-
 }
 
 
 export default function CategorySelectorComponent({ categories }: CategorySelectorProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  console.log(categories);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
