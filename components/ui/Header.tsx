@@ -11,7 +11,7 @@ import { useBasketStore } from "@/app/(store)/useBasketStore";
 function Header() {
   const { user } = useUser();
   const itemCount = useBasketStore((state) =>
-    state.items.reduce((total, item) => total + item.quantity, 0)
+    state.items.reduce((total, item) => total + (item.quantity ?? 0), 0)
   );
 
   const createClerkPasskey = async () => {

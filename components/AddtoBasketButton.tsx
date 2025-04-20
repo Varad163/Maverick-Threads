@@ -1,61 +1,66 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
 import { Product } from "@/sanity.types";
 import { useBasketStore } from "@/app/(store)/useBasketStore";
 import React from "react";
 
-interface AddtoBasketProps {
+interface AddToBasketProps {
     product: Product;
-    disabled: boolean;
+    disabled?: boolean;
 }
 
-const AddtoBasketButton: React.FC<AddtoBasketProps> = ({ product, disabled }) => {
+const AddToBasketButton: React.FC<AddToBasketProps> = ({ product, disabled = false }) => {
     const addItem = useBasketStore((state) => state.addItem);
     const removeItem = useBasketStore((state) => state.removeItem);
 
-    // ✅ Dynamically get item count from store
     const itemCount = useBasketStore((state) =>
         state.items.find((item) => item.id === product._id)?.quantity || 0
     );
 
+    const handleAdd = () => {
+        addItem({
+            id: product._id,
+            // name: product.name ?? "Unnamed Product", // Removed as 'name' is not part of 'Item' type
+            // slug property removed as it does not exist in the Item type
+            price: product.price ?? 0,
+            quantity: 1,
+        });
+    };
+
+    const handleRemove = () => {
+        removeItem(product._id);
+    };
+
     return (
-        <div className="flex items-center justify-between space-x-2">
-            {/* Minus */}
+        <div className="flex items-center space-x-2">
+            {/* Minus Button */}
             <button
-                onClick={() => removeItem(product._id)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200 ${itemCount === 0 || disabled
-                        ? "bg-gray-100 cursor-not-allowed"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
+                onClick={handleRemove}
                 disabled={itemCount === 0 || disabled}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${itemCount === 0 || disabled
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
             >
-                <span
-                    className={`text-xl font-bold ${itemCount === 0 || disabled ? "text-gray-400" : "text-gray-600"
-                        }`}
-                >
-                    −
-                </span>
+                −
             </button>
 
-            {/* Count */}
-            <span className="w-8 text-center font-semibold text-gray-700">
-                {itemCount}
-            </span>
+            {/* Count Display */}
+            <span className="w-8 text-center font-medium text-gray-700">{itemCount}</span>
 
-            {/* Plus */}
+            {/* Plus Button */}
             <button
-                onClick={() => addItem({ id: product._id, price: product.price ?? 0 })}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200 ${disabled
-                        ? "bg-gray-100 cursor-not-allowed"
-                        : "bg-gray-500 hover:bg-gray-600"
-                    }`}
+                onClick={handleAdd}
                 disabled={disabled}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${disabled
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
             >
-                <span className="text-white font-bold">+</span>
+                +
             </button>
         </div>
     );
 };
 
-export default AddtoBasketButton;
+export default AddToBasketButton;

@@ -126,12 +126,12 @@ export type Product = {
       _ref: string;
       _type: "reference";
       _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
     };
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
-  };
+  }
+
   description?: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -285,10 +285,11 @@ export type Category = {
   _updatedAt: string;
   _rev: string;
   title: "category";
-  slug: string;
+  slug: { current: string };
   description?: string;
   value: string; // Or the appropriate type
   label: string;
+  
 };
 
 
