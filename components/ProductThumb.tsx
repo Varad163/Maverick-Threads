@@ -49,6 +49,8 @@ function ProductThumb({ product }: { product: Product }) {
           £{product.price?.toFixed(2)}
         </p>
       </div>
+     
+      
     </Link>
   );
 }

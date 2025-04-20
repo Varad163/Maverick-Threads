@@ -4,7 +4,8 @@ import Image from "next/image";
 import { imageUrl } from "@/lib/imageUrl";
 import { PortableText } from "next-sanity";
 import { Product } from "@/sanity.types";  // Import the correct type
-
+import { Button } from "@/components/ui/button";
+import AddtoBasketButton from "@/components/AddtoBasketButton"; // Ensure this import is correct
 
 const ProductPage = async ({ params }: { params: { slug: string } }) => {
   const { slug } = params;
@@ -15,6 +16,7 @@ const ProductPage = async ({ params }: { params: { slug: string } }) => {
   }
 
   const isOutOfStock = product.stock != null && product.stock <= 0;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -38,6 +40,7 @@ const ProductPage = async ({ params }: { params: { slug: string } }) => {
             </div>
           )}
         </div>
+
         <div className="flex flex-col justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-4">{product.name || "Untitled"}</h1>
@@ -51,6 +54,11 @@ const ProductPage = async ({ params }: { params: { slug: string } }) => {
                 <p>No description available</p>
               )}
             </div>
+          </div>
+
+          <div className="mt-6">
+            <AddtoBasketButton product={product} itemCount={0} disabled={isOutOfStock} />
+            
           </div>
         </div>
       </div>
