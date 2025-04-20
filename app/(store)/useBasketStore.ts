@@ -1,4 +1,5 @@
-import { create } from "zustand";
+// app/(store)/useBasketStore.ts
+import { create } from 'zustand';
 
 interface BasketItem {
     id: string;
@@ -7,50 +8,39 @@ interface BasketItem {
 }
 
 interface BasketState {
-    groupedItems: Record<string, BasketItem>;
-    totalPrice: number;
+    items: BasketItem[];
     addItem: (item: { id: string; price: number }) => void;
-    removeItem: (itemId: string) => void;
+    removeItem: (id: string) => void;
 }
 
 export const useBasketStore = create<BasketState>((set) => ({
-    groupedItems: {},
-    totalPrice: 0,
-
+    items: [],
     addItem: (item) =>
         set((state) => {
-            const updatedGroupedItems = { ...state.groupedItems };
-
-            if (updatedGroupedItems[item.id]) {
-                updatedGroupedItems[item.id].quantity += 1;
-            } else {
-                updatedGroupedItems[item.id] = { ...item, quantity: 1 };
-            }
-
-            return {
-                groupedItems: updatedGroupedItems,
-                totalPrice: state.totalPrice + item.price,
-            };
-        }),
-
-    removeItem: (itemId) =>
-        set((state) => {
-            const updatedGroupedItems = { ...state.groupedItems };
-            const item = updatedGroupedItems[itemId];
-
-            if (item) {
-                if (item.quantity > 1) {
-                    item.quantity -= 1;
-                } else {
-                    delete updatedGroupedItems[itemId];
-                }
-
+            const existingItem = state.items.find((i) => i.id === item.id);
+            if (existingItem) {
                 return {
-                    groupedItems: updatedGroupedItems,
-                    totalPrice: state.totalPrice - item.price,
+                    items: state.items.map((i) =>
+                        i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+                    ),
                 };
             }
-
-            return state;
+            return {
+                items: [...state.items, { ...item, quantity: 1 }],
+            };
+        }),
+    removeItem: (id) =>
+        set((state) => {
+            const existingItem = state.items.find((i) => i.id === id);
+            if (existingItem && existingItem.quantity > 1) {
+                return {
+                    items: state.items.map((i) =>
+                        i.id === id ? { ...i, quantity: i.quantity - 1 } : i
+                    ),
+                };
+            }
+            return {
+                items: state.items.filter((i) => i.id !== id),
+            };
         }),
 }));

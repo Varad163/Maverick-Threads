@@ -1,30 +1,29 @@
 'use client';
-import { Button } from "@/components/ui/button"; // Make sure the path is correct
-import { Product } from "@/sanity.types"; // Assuming you're passing a product prop
-import { useBasketStore } from "@/app/(store)/useBasketStore"; // Adjust path as needed
+
+import { Button } from "@/components/ui/button";
+import { Product } from "@/sanity.types";
+import { useBasketStore } from "@/app/(store)/useBasketStore";
 import React from "react";
 
 interface AddtoBasketProps {
     product: Product;
-    itemCount: number;
     disabled: boolean;
 }
 
-const AddtoBasketButton: React.FC<AddtoBasketProps> = ({ product, itemCount, disabled }) => {
+const AddtoBasketButton: React.FC<AddtoBasketProps> = ({ product, disabled }) => {
     const addItem = useBasketStore((state) => state.addItem);
     const removeItem = useBasketStore((state) => state.removeItem);
 
-    const handleAddToBasket = () => {
-        if (!disabled && product._id && product.price) {
-            addItem({ id: product._id, price: product.price });
-        }
-    };
+    // ✅ Dynamically get item count from store
+    const itemCount = useBasketStore((state) =>
+        state.items.find((item) => item.id === product._id)?.quantity || 0
+    );
 
     return (
         <div className="flex items-center justify-between space-x-2">
-            {/* Minus Button */}
+            {/* Minus */}
             <button
-                onClick={() => removeItem(product._id)} // You’ll need to have this function
+                onClick={() => removeItem(product._id)}
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200 ${itemCount === 0 || disabled
                         ? "bg-gray-100 cursor-not-allowed"
                         : "bg-gray-200 hover:bg-gray-300"
@@ -39,16 +38,14 @@ const AddtoBasketButton: React.FC<AddtoBasketProps> = ({ product, itemCount, dis
                 </span>
             </button>
 
-            {/* Count Display */}
+            {/* Count */}
             <span className="w-8 text-center font-semibold text-gray-700">
                 {itemCount}
             </span>
 
-            {/* Plus Button */}
+            {/* Plus */}
             <button
-                onClick={() =>
-                    addItem({ id: product._id, price: product.price ?? 0 })
-                }
+                onClick={() => addItem({ id: product._id, price: product.price ?? 0 })}
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200 ${disabled
                         ? "bg-gray-100 cursor-not-allowed"
                         : "bg-gray-500 hover:bg-gray-600"
@@ -59,7 +56,6 @@ const AddtoBasketButton: React.FC<AddtoBasketProps> = ({ product, itemCount, dis
             </button>
         </div>
     );
-
 };
 
 export default AddtoBasketButton;

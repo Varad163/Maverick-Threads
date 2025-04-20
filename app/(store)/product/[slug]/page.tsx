@@ -57,7 +57,7 @@ const ProductPage = async ({ params }: { params: { slug: string } }) => {
           </div>
 
           <div className="mt-6">
-            <AddtoBasketButton product={product} itemCount={0} disabled={isOutOfStock} />
+            <AddtoBasketButton product={product} disabled={isOutOfStock} />
             
           </div>
         </div>
