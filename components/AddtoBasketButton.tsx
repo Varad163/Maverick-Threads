@@ -20,9 +20,7 @@ const AddToBasketButton: React.FC<AddToBasketProps> = ({ product, disabled = fal
     const handleAdd = () => {
         addItem({
             id: product._id,
-            // name: product.name ?? "Unnamed Product", // Removed as 'name' is not part of 'Item' type
-            // slug property removed as it does not exist in the Item type
-            price: product.price ?? 0,
+            name: product.name ?? "Unnamed Product", // Provide a default name if product.name is undefined
             quantity: 1,
         });
     };

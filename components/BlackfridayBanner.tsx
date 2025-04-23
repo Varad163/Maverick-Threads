@@ -1,3 +1,4 @@
+
 import { getActiveSaleByCouponCode } from "@/sanity/lib/sales/getActiveSaleByCouponCode";
 
 export default async function BlackFridayBanner() {
