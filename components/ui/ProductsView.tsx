@@ -54,8 +54,8 @@ export default function CategorySelectorComponent({ categories }: CategorySelect
             <CommandGroup>
               {categories.data?.map((category) => (
                 <CommandItem
-                  key={category.value} // Ensure category.value is unique
-                  value={category.value} // Use category.value consistently
+                  key={category.value} 
+                  value={category.value} 
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue); // Toggle selection
                     setOpen(false);
