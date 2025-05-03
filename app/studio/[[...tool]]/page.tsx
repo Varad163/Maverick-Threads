@@ -5,6 +5,7 @@
  *
  * You can learn more about the next-sanity package here:
  * https://github.com/sanity-io/next-sanity
+ * this is the default route for the studio, and it will be used to render the studio interface.
  */
 
 import { NextStudio } from 'next-sanity/studio'
