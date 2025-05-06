@@ -64,7 +64,7 @@ const useBasketStore = create<BasketStore>()(
                 return Object.values(grouped);
             },
         }),
-        { name: 'basket-store' } // Enable localStorage persistence
+        { name: 'basket-store' } 
     )
 );
 
