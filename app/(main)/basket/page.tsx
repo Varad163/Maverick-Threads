@@ -1,16 +1,22 @@
 "use client";
 
-import Image from "next/image";
 import React from "react";
+import Image from "next/image";
 import useBasketStore from "@/app/store/useBasketStore";
+import { loadStripe } from "@stripe/stripe-js";
+
+// ⭐ Load Stripe PUBLIC KEY
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 export default function BasketPage() {
-  // Access everything from Zustand **outside render loops**
+  // Zustand state
   const items = useBasketStore((state) => state.items);
   const addItem = useBasketStore((state) => state.addItem);
   const removeItem = useBasketStore((state) => state.removeItem);
 
-  // Group the items safely
+  // ⭐ Group items to avoid duplicates
   const groupedItems = React.useMemo(() => {
     const grouped: Record<string, typeof items[0]> = {};
 
@@ -25,13 +31,40 @@ export default function BasketPage() {
     return Object.values(grouped);
   }, [items]);
 
-  // Correct reducer (NO curly braces)
   const totalPrice = React.useMemo(() => {
     return groupedItems.reduce(
       (sum, item) => sum + (item.product.price || 0) * item.quantity,
       0
     );
   }, [groupedItems]);
+
+  const handleCheckout = async () => {
+    const stripe = await stripePromise;
+    if (!stripe) return alert("Stripe failed to load");
+
+    const res = await fetch("/api/create-checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: groupedItems.map((i) => ({
+          id: i.id,
+          quantity: i.quantity,
+        })),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data?.id) {
+      alert("Checkout session missing");
+      return;
+    }
+
+    // ⭐ Correct method for Stripe browser SDK
+    await stripe.redirectToCheckout({
+      sessionId: data.id,
+    });
+  };
 
   return (
     <div className="p-10 max-w-3xl mx-auto">
@@ -44,14 +77,13 @@ export default function BasketPage() {
         </div>
       )}
 
-      {/* ITEMS LIST */}
+      {/* ITEM LIST */}
       <div className="space-y-4">
         {groupedItems.map((item) => (
           <div
             key={item.id}
             className="flex items-center justify-between bg-white shadow-md p-4 rounded-lg"
           >
-            {/* Product Details */}
             <div className="flex items-center gap-4">
               {/* Product Image */}
               {item.product.image?.asset?._ref ? (
@@ -73,14 +105,13 @@ export default function BasketPage() {
                 </div>
               )}
 
-              {/* Name & Price */}
               <div>
                 <p className="font-semibold">{item.product.name}</p>
                 <p className="text-sm text-gray-500">£{item.product.price}</p>
               </div>
             </div>
 
-            {/* +/- Buttons */}
+            {/* Quantity Controls */}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => removeItem(item.id)}
@@ -110,12 +141,19 @@ export default function BasketPage() {
         ))}
       </div>
 
-      {/* TOTAL PRICE */}
+      {/* TOTAL + CHECKOUT BUTTON */}
       {groupedItems.length > 0 && (
-        <div className="mt-10 text-right">
+        <div className="mt-10 text-right space-y-4">
           <h2 className="text-2xl font-bold">
             Total: £{totalPrice.toFixed(2)}
           </h2>
+
+          <button
+            onClick={handleCheckout}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Proceed to Checkout 💳
+          </button>
         </div>
       )}
     </div>
