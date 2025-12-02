@@ -6,7 +6,7 @@ import Link from "next/link";
 import { TrolleyIcon } from "@sanity/icons";
 import { PackageIcon } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
-import { useBasketStore } from "@/app/(store)/useBasketStore";
+import  useBasketStore  from "@/app/store/useBasketStore";
 
 function Header() {
   const { user } = useUser();

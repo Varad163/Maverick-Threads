@@ -3,25 +3,29 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { imageUrl } from "@/lib/imageUrl";
 import { PortableText } from "next-sanity";
-import { Product } from "@/sanity.types";  // Import the correct type
+import { Product } from "@/sanity.types";
 import { Button } from "@/components/ui/button";
-import AddtoBasketButton from "@/components/AddtoBasketButton"; // Ensure this import is correct
+import AddtoBasketButton from "@/components/AddtoBasketButton";
 
-const ProductPage = async ({ params }: { params: { slug: string } }) => {
-  const { slug } = params;
+export const dynamic = "force-dynamic"; // optional but recommended with Sanity
+
+const ProductPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
+  const { slug } = await params;  // ✅ FIX
+
   const product: Product | null = await getProductBySlug(slug);
 
-  if (!product) {
-    return notFound();
-  }
+  if (!product) return notFound();
 
   const isOutOfStock = product.stock != null && product.stock <= 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
         <div
-          className={`relative aspect-square overflow-hidden rounded-lg shadow-lg ${isOutOfStock ? "opacity-50" : ""}`}
+          className={`relative aspect-square overflow-hidden rounded-lg shadow-lg ${
+            isOutOfStock ? "opacity-50" : ""
+          }`}
         >
           {product.image ? (
             <Image
@@ -43,12 +47,12 @@ const ProductPage = async ({ params }: { params: { slug: string } }) => {
 
         <div className="flex flex-col justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-4">{product.name || "Untitled"}</h1>
+            <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
             <div className="text-xl font-semibold mb-4">
-              £{product.price ? product.price.toFixed(2) : "Price Unavailable"}
+              £{product.price?.toFixed(2) ?? "Price Unavailable"}
             </div>
             <div className="prose max-w-none mb-6">
-              {product.description && Array.isArray(product.description) ? (
+              {Array.isArray(product.description) ? (
                 <PortableText value={product.description} />
               ) : (
                 <p>No description available</p>
@@ -64,6 +68,6 @@ const ProductPage = async ({ params }: { params: { slug: string } }) => {
       </div>
     </div>
   );
-}
+};
 
 export default ProductPage;
