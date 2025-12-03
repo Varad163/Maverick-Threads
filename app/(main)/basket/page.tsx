@@ -9,7 +9,6 @@ export default function BasketPage() {
   const addItem = useBasketStore((state) => state.addItem);
   const removeItem = useBasketStore((state) => state.removeItem);
 
-  // Group basket items
   const groupedItems = React.useMemo(() => {
     const grouped: Record<string, typeof items[0]> = {};
     for (const item of items) {
@@ -34,28 +33,31 @@ export default function BasketPage() {
   );
 
   // ⭐ NEW CHECKOUT — NO STRIPE JS, NO redirectToCheckout()
-  const handleCheckout = async () => {
-    const res = await fetch("/api/create-checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: groupedItems.map((i) => ({
-          id: i.id,
-          quantity: i.quantity,
-        })),
-      }),
-    });
+ const handleCheckout = async () => {
+  const res = await fetch("/api/create-checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: groupedItems.map((i) => ({
+        id: i.id,
+        quantity: i.quantity,
+        product: {
+          name: i.product.name,
+          price: i.product.price,
+        }
+      })),
+    }),
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (!data?.url) {
-      alert("Something went wrong creating checkout session");
-      return;
-    }
+  if (!data?.url) {
+    alert("Something went wrong creating checkout session");
+    return;
+  }
 
-    // ⭐ Redirect user to Stripe Checkout page
-    window.location.href = data.url;
-  };
+  window.location.href = data.url;
+};
 
   return (
     <div className="p-10 max-w-3xl mx-auto">
