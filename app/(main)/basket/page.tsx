@@ -3,23 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import useBasketStore from "@/app/store/useBasketStore";
-import { loadStripe } from "@stripe/stripe-js";
-
-// ⭐ Load Stripe PUBLIC KEY
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
 
 export default function BasketPage() {
-  // Zustand state
   const items = useBasketStore((state) => state.items);
   const addItem = useBasketStore((state) => state.addItem);
   const removeItem = useBasketStore((state) => state.removeItem);
 
-  // ⭐ Group items to avoid duplicates
+  // Group basket items
   const groupedItems = React.useMemo(() => {
     const grouped: Record<string, typeof items[0]> = {};
-
     for (const item of items) {
       if (grouped[item.id]) {
         grouped[item.id].quantity += item.quantity;
@@ -27,21 +19,22 @@ export default function BasketPage() {
         grouped[item.id] = { ...item };
       }
     }
-
     return Object.values(grouped);
   }, [items]);
 
-  const totalPrice = React.useMemo(() => {
-    return groupedItems.reduce(
-      (sum, item) => sum + (item.product.price || 0) * item.quantity,
-      0
-    );
-  }, [groupedItems]);
+  // Total price
+  const totalPrice = React.useMemo(
+    () =>
+      groupedItems.reduce(
+        (sum, item) =>
+          sum + (item.product.price || 0) * item.quantity,
+        0
+      ),
+    [groupedItems]
+  );
 
+  // ⭐ NEW CHECKOUT — NO STRIPE JS, NO redirectToCheckout()
   const handleCheckout = async () => {
-    const stripe = await stripePromise;
-    if (!stripe) return alert("Stripe failed to load");
-
     const res = await fetch("/api/create-checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -55,37 +48,34 @@ export default function BasketPage() {
 
     const data = await res.json();
 
-    if (!data?.id) {
-      alert("Checkout session missing");
+    if (!data?.url) {
+      alert("Something went wrong creating checkout session");
       return;
     }
 
-    // ⭐ Correct method for Stripe browser SDK
-    await stripe.redirectToCheckout({
-      sessionId: data.id,
-    });
+    // ⭐ Redirect user to Stripe Checkout page
+    window.location.href = data.url;
   };
 
   return (
     <div className="p-10 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Your Basket 🛒</h1>
 
-      {/* EMPTY BASKET */}
       {groupedItems.length === 0 && (
         <div className="text-center text-gray-500 text-lg py-20">
           Your basket is empty 😕
         </div>
       )}
 
-      {/* ITEM LIST */}
       <div className="space-y-4">
         {groupedItems.map((item) => (
           <div
             key={item.id}
             className="flex items-center justify-between bg-white shadow-md p-4 rounded-lg"
           >
+            {/* Product Left */}
             <div className="flex items-center gap-4">
-              {/* Product Image */}
+              {/* Image */}
               {item.product.image?.asset?._ref ? (
                 <div className="relative w-16 h-16">
                   <Image
@@ -111,7 +101,7 @@ export default function BasketPage() {
               </div>
             </div>
 
-            {/* Quantity Controls */}
+            {/* Quantity buttons */}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => removeItem(item.id)}
@@ -141,7 +131,7 @@ export default function BasketPage() {
         ))}
       </div>
 
-      {/* TOTAL + CHECKOUT BUTTON */}
+      {/* Total + Checkout */}
       {groupedItems.length > 0 && (
         <div className="mt-10 text-right space-y-4">
           <h2 className="text-2xl font-bold">
