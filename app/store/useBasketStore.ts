@@ -10,23 +10,35 @@ export interface BasketItem {
   quantity: number;
 }
 
-export interface GroupedItem {
+export interface OrderItem {
   id: string;
   product: Product;
   quantity: number;
 }
 
+export interface Order {
+  id: string;           // order id
+  createdAt: string;    // ISO date
+  total: number;        // total price
+  items: OrderItem[];
+}
+
 interface BasketStore {
   items: BasketItem[];
+  orders: Order[];
+
   addItem: (item: BasketItem) => void;
   removeItem: (id: string) => void;
-  getGroupedItems: () => GroupedItem[];
+  clearBasket: () => void;
+
+  addOrder: (order: Order) => void;
 }
 
 const useBasketStore = create<BasketStore>()(
   persist(
     (set, get) => ({
       items: [],
+      orders: [],
 
       addItem: (item) => {
         const items = get().items;
@@ -35,7 +47,9 @@ const useBasketStore = create<BasketStore>()(
         if (existing) {
           set({
             items: items.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+              i.id === item.id
+                ? { ...i, quantity: i.quantity + item.quantity }
+                : i
             ),
           });
         } else {
@@ -57,21 +71,16 @@ const useBasketStore = create<BasketStore>()(
         set({ items: updated });
       },
 
-      getGroupedItems: () => {
-        const grouped: Record<string, GroupedItem> = {};
+      clearBasket: () => set({ items: [] }),
 
-        for (const item of get().items) {
-          if (grouped[item.id]) {
-            grouped[item.id].quantity += item.quantity;
-          } else {
-            grouped[item.id] = { ...item };
-          }
-        }
-
-        return Object.values(grouped);
+      addOrder: (order) => {
+        const orders = get().orders;
+        set({ orders: [order, ...orders] }); // newest first
       },
     }),
-    { name: "basket-store" }
+    {
+      name: "basket-store", // localStorage key
+    }
   )
 );
 
